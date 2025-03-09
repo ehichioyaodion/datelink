@@ -1,6 +1,19 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, Image, TouchableOpacity, FlatList, Dimensions } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  FlatList,
+  Dimensions,
+  Alert,
+  Platform,
+  Linking,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
+import * as Contacts from 'expo-contacts';
 
 const { width } = Dimensions.get('window');
 
@@ -29,6 +42,54 @@ const OnboardingScreen = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const navigation = useNavigation();
   const slidesRef = useRef(null);
+
+  const requestPermissions = async () => {
+    try {
+      // Request camera and photo library permissions
+      const imagePermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
+
+      // Request location permission
+      const locationPermission = await Location.requestForegroundPermissionsAsync();
+
+      // Request contacts permission
+      const contactsPermission = await Contacts.requestPermissionsAsync();
+
+      // Check if any permission was denied
+      const deniedPermissions = [];
+
+      if (!imagePermission.granted) deniedPermissions.push('photo library');
+      if (!cameraPermission.granted) deniedPermissions.push('camera');
+      if (!locationPermission.granted) deniedPermissions.push('location');
+      if (!contactsPermission.granted) deniedPermissions.push('contacts');
+
+      if (deniedPermissions.length > 0) {
+        Alert.alert(
+          'Permissions Required',
+          `DateLink needs access to your ${deniedPermissions.join(', ')} to provide you with the best experience. Please enable these permissions in your device settings.`,
+          [
+            {
+              text: 'Open Settings',
+              onPress: () =>
+                Platform.OS === 'ios' ? Linking.openURL('app-settings:') : Linking.openSettings(),
+            },
+            {
+              text: 'Continue Anyway',
+              onPress: () => navigation.navigate('Auth'),
+              style: 'cancel',
+            },
+          ]
+        );
+      } else {
+        // All permissions granted, proceed to Auth screen
+        navigation.navigate('Auth');
+      }
+    } catch (error) {
+      console.error('Error requesting permissions:', error);
+      // Proceed to Auth screen even if there's an error
+      navigation.navigate('Auth');
+    }
+  };
 
   const renderItem = ({ item }) => {
     return (
@@ -73,9 +134,7 @@ const OnboardingScreen = () => {
       </View>
 
       <View className="mb-8 px-4">
-        <TouchableOpacity
-          className="rounded-full bg-colorBlue py-4"
-          onPress={() => navigation.navigate('Auth')}>
+        <TouchableOpacity className="rounded-full bg-colorBlue py-4" onPress={requestPermissions}>
           <Text className="text-center text-lg font-semibold text-white">Get Started</Text>
         </TouchableOpacity>
       </View>

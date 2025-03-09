@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import {
   ArrowLeftIcon,
@@ -11,9 +11,38 @@ import {
   ShieldCheckIcon,
   QuestionMarkCircleIcon,
 } from 'react-native-heroicons/solid';
+import { useAuth } from '../context/AuthContext';
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await logout();
+              // Navigation will be handled automatically by AppNavigator
+              // due to the auth state change
+            } catch (error) {
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
 
   const menuItems = [
     {
@@ -71,15 +100,17 @@ const ProfileScreen = () => {
         <View className="mt-4 items-center">
           <View className="relative">
             <Image
-              source={{ uri: 'https://example.com/profile.jpg' }}
+              source={{ uri: user?.photoURL || 'https://example.com/profile.jpg' }}
               className="h-32 w-32 rounded-full"
             />
             <TouchableOpacity className="absolute bottom-0 right-0 rounded-full bg-colorBlue p-2">
               <CameraIcon size={20} color="#ffffff" />
             </TouchableOpacity>
           </View>
-          <Text className="mt-4 text-2xl font-bold text-gray-900">Sarah Johnson</Text>
-          <Text className="text-lg text-gray-600">New York, USA</Text>
+          <Text className="mt-4 text-2xl font-bold text-gray-900">
+            {user?.displayName || user?.email}
+          </Text>
+          <Text className="text-lg text-gray-600">{user?.location || 'Location not set'}</Text>
         </View>
 
         <View className="mb-6 mt-8 flex-row justify-around px-4">
@@ -116,7 +147,10 @@ const ProfileScreen = () => {
           ))}
         </View>
 
-        <TouchableOpacity className="mx-4 my-6">
+        <TouchableOpacity 
+          className="mx-4 my-6 rounded-xl bg-red-50 p-4"
+          onPress={handleLogout}
+        >
           <Text className="text-center text-lg font-semibold text-red-500">Log Out</Text>
         </TouchableOpacity>
       </ScrollView>

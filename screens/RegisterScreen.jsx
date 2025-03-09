@@ -1,10 +1,21 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { ArrowLeftIcon } from 'react-native-heroicons/solid';
+import { useAuth } from '../context/AuthContext';
 
 const RegisterScreen = () => {
   const navigation = useNavigation();
+  const { register, error } = useAuth();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -14,6 +25,59 @@ const RegisterScreen = () => {
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const validateForm = () => {
+    if (!formData.fullName || !formData.email || !formData.password || !formData.confirmPassword) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return false;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return false;
+    }
+
+    if (formData.password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters long');
+      return false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleRegister = async () => {
+    if (!validateForm()) return;
+
+    try {
+      setLoading(true);
+      const userData = {
+        displayName: formData.fullName,
+        email: formData.email,
+        createdAt: new Date().toISOString(),
+        // Add any additional user data you want to store
+        photoURL: null,
+        bio: '',
+        location: '',
+        interests: [],
+      };
+
+      await register(formData.email, formData.password, userData);
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'ProfileSetup' }],
+      });
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -42,6 +106,7 @@ const RegisterScreen = () => {
               placeholder="Enter your full name"
               value={formData.fullName}
               onChangeText={(value) => handleChange('fullName', value)}
+              autoCapitalize="words"
             />
           </View>
 
@@ -83,9 +148,16 @@ const RegisterScreen = () => {
         <View className="mb-4 mt-8">
           <TouchableOpacity
             className="rounded-full bg-colorBlue py-4"
-            onPress={() => navigation.navigate('ProfileSetup')}>
-            <Text className="text-center text-lg font-semibold text-white">Create Account</Text>
+            onPress={handleRegister}
+            disabled={loading}>
+            {loading ? (
+              <ActivityIndicator size="small" color="#ffffff" />
+            ) : (
+              <Text className="text-center text-lg font-semibold text-white">Create Account</Text>
+            )}
           </TouchableOpacity>
+
+          {error && <Text className="mt-4 text-center text-red-500">{error}</Text>}
 
           <View className="mt-6 flex-row justify-center">
             <Text className="text-gray-600">Already have an account? </Text>

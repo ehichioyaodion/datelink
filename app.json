@@ -12,7 +12,22 @@
       "tsconfigPaths": true
     },
 
-    "plugins": [],
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "DateLink needs access to your photos to set up your profile and share images in chats.",
+          "cameraPermission": "DateLink needs access to your camera to take profile photos and share images."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "DateLink needs your location to help you find matches nearby and improve your experience.",
+          "locationWhenInUsePermission": "DateLink needs your location to help you find matches nearby."
+        }
+      ]
+    ],
 
     "orientation": "portrait",
     "icon": "./assets/DATELINK_LOGO.png",
@@ -26,13 +41,24 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "DateLink needs access to your camera to take profile photos and share images.",
+        "NSPhotoLibraryUsageDescription": "DateLink needs access to your photos to set up your profile and share images in chats.",
+        "NSLocationWhenInUseUsageDescription": "DateLink needs your location to help you find matches nearby.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "DateLink needs your location to help you find matches nearby and improve your experience.",
+        "NSContactsUsageDescription": "DateLink needs access to your contacts to find friends using the app."
+      }
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/DATELINK_LOGO.png",
-        "backgroundColor": "#ffffff"
-      }
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "READ_CONTACTS"
+      ]
     }
   }
 }

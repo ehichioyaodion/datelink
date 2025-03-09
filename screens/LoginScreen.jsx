@@ -1,20 +1,34 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { ArrowLeftIcon } from 'react-native-heroicons/solid';
+import { useAuth } from '../context/AuthContext';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
+  const { login, error } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    // Add your login logic here
-    // After successful login:
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Main' }],
-    });
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await login(email, password);
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Main' }],
+      });
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -61,10 +75,24 @@ const LoginScreen = () => {
         </View>
 
         <View className="mt-8">
-          <TouchableOpacity className="rounded-full bg-colorBlue py-4" onPress={handleLogin}>
-            <Text className="text-center text-lg font-semibold text-white">Log In</Text>
+          <TouchableOpacity 
+            className="rounded-full bg-colorBlue py-4" 
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color="#ffffff" />
+            ) : (
+              <Text className="text-center text-lg font-semibold text-white">
+                Log In
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
+
+        {error && (
+          <Text className="mt-4 text-center text-red-500">{error}</Text>
+        )}
 
         <View className="mt-8 flex-row justify-center">
           <Text className="text-gray-600">Don't have an account? </Text>

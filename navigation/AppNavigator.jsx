@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useAuth } from '../context/AuthContext';
+import { View, ActivityIndicator } from 'react-native';
 
 // Import screens
 import WelcomeScreen from '../screens/WelcomeScreen';
@@ -69,26 +71,50 @@ const MainNavigator = () => {
 };
 
 const AppNavigator = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color="#8B5CF6" />
+      </View>
+    );
+  }
+
   return (
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
         }}>
-        <Stack.Screen
-          name="Authenticate"
-          component={AuthNavigator}
-          options={{
-            gestureEnabled: false, // Disable swipe back gesture
-          }}
-        />
-        <Stack.Screen
-          name="Main"
-          component={MainNavigator}
-          options={{
-            gestureEnabled: false, // Disable swipe back gesture
-          }}
-        />
+        {user ? (
+          // Check if user has completed profile setup
+          user.profileCompleted ? (
+            <Stack.Screen
+              name="Main"
+              component={MainNavigator}
+              options={{
+                gestureEnabled: false,
+              }}
+            />
+          ) : (
+            <Stack.Screen
+              name="ProfileSetup"
+              component={ProfileSetupScreen}
+              options={{
+                gestureEnabled: false,
+              }}
+            />
+          )
+        ) : (
+          <Stack.Screen
+            name="Authenticate"
+            component={AuthNavigator}
+            options={{
+              gestureEnabled: false,
+            }}
+          />
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
