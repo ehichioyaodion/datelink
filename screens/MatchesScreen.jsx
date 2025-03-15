@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,46 +13,57 @@ import {
   ListBulletIcon,
   ChatBubbleLeftRightIcon,
 } from "react-native-heroicons/solid";
-
-const DUMMY_MATCHES = [
-  {
-    id: "1",
-    name: "Sarah Johnson",
-    age: 25,
-    image: "https://example.com/sarah.jpg",
-    lastActive: "2 min ago",
-    isOnline: true,
-    matchDate: "Today",
-  },
-  {
-    id: "2",
-    name: "Emma Wilson",
-    age: 28,
-    image: "https://example.com/emma.jpg",
-    lastActive: "1 hour ago",
-    isOnline: false,
-    matchDate: "Yesterday",
-  },
-  {
-    id: "3",
-    name: "Jessica Brown",
-    age: 24,
-    image: "https://example.com/jessica.jpg",
-    lastActive: "3 hours ago",
-    isOnline: true,
-    matchDate: "Yesterday",
-  },
-  // Add more matches
-];
+import { collection, query, where, getDocs, onSnapshot, doc, getDoc } from 'firebase/firestore';
+import { FIREBASE_DB, MATCHES_REF, USERS_REF } from '../FirebaseConfig';
+import { useAuth } from '../context/AuthContext';
 
 const MatchesScreen = () => {
   const navigation = useNavigation();
   const [viewMode, setViewMode] = useState("grid"); // 'grid' or 'list'
+  const [matches, setMatches] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const matchesQuery = query(
+      collection(FIREBASE_DB, MATCHES_REF),
+      where('users', 'array-contains', user.uid)
+    );
+
+    const unsubscribe = onSnapshot(matchesQuery, async (snapshot) => {
+      const matchesData = [];
+      
+      for (const doc of snapshot.docs) {
+        const matchData = doc.data();
+        const otherUserId = matchData.users.find(id => id !== user.uid);
+        
+        // Get other user's profile data
+        const userDoc = await getDoc(doc(FIREBASE_DB, USERS_REF, otherUserId));
+        const userData = userDoc.data();
+
+        matchesData.push({
+          id: doc.id,
+          ...matchData,
+          name: userData.name,
+          age: userData.age,
+          image: userData.photoURL,
+          lastActive: userData.lastActive || null,
+          isOnline: userData.isOnline || false,
+          matchDate: matchData.createdAt,
+        });
+      }
+
+      setMatches(matchesData);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [user.uid]);
 
   const GridItem = ({ match }) => (
     <TouchableOpacity
       onPress={() => navigation.navigate("ChatRoom", { matchId: match.id })}
-      className="w-[48%] bg-white rounded-2xl overflow-hidden mb-4 shadow-sm"
+      className="w-full md:w-[48%] lg:w-[31%] bg-white rounded-2xl overflow-hidden mb-4 shadow-sm"
     >
       <View className="relative">
         <Image
@@ -106,14 +117,14 @@ const MatchesScreen = () => {
   );
 
   return (
-    <View className="flex-1 bg-gray-50">
-      <View className="p-4 bg-white border-b border-gray-200">
+    <View className="flex-1 bg-white md:bg-gray-50">
+      <View className="px-4 py-3 flex-row items-center justify-between bg-white">
         <Text className="text-2xl font-bold text-gray-900">Matches</Text>
       </View>
 
       <View className="flex-row justify-between items-center px-4 py-2 bg-white">
         <Text className="text-base text-gray-600">
-          {DUMMY_MATCHES.length} matches
+          {matches.length} matches
         </Text>
         <View className="flex-row space-x-2">
           <TouchableOpacity
@@ -142,18 +153,20 @@ const MatchesScreen = () => {
       </View>
 
       {viewMode === "grid" ? (
-        <ScrollView className="flex-1 p-4">
-          <View className="flex-row flex-wrap justify-between">
-            {DUMMY_MATCHES.map((match) => (
+        <ScrollView className="flex-1 md:px-4">
+          <View className="flex-row flex-wrap justify-between p-4">
+            {matches.map((match) => (
               <GridItem key={match.id} match={match} />
             ))}
           </View>
         </ScrollView>
       ) : (
-        <ScrollView className="flex-1 p-4">
-          {DUMMY_MATCHES.map((match) => (
-            <ListItem key={match.id} match={match} />
-          ))}
+        <ScrollView className="flex-1 md:px-4">
+          <View className="p-4 space-y-2">
+            {matches.map((match) => (
+              <ListItem key={match.id} match={match} />
+            ))}
+          </View>
         </ScrollView>
       )}
     </View>

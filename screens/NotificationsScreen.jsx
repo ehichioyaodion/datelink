@@ -1,38 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { ArrowLeftIcon } from 'react-native-heroicons/solid';
-
-const DUMMY_NOTIFICATIONS = [
-  {
-    id: '1',
-    type: 'match',
-    title: 'New Match!',
-    message: 'You and Sarah have matched!',
-    image: 'https://example.com/sarah.jpg',
-    timestamp: '2 min ago',
-    read: false,
-  },
-  {
-    id: '2',
-    type: 'like',
-    title: 'Someone likes you!',
-    message: 'James liked your profile',
-    image: 'https://example.com/james.jpg',
-    timestamp: '1 hour ago',
-    read: false,
-  },
-  {
-    id: '3',
-    type: 'message',
-    title: 'New message',
-    message: 'Sarah sent you a message',
-    image: 'https://example.com/sarah.jpg',
-    timestamp: '2 hours ago',
-    read: true,
-  },
-  // Add more notifications
-];
+import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { FIREBASE_DB } from '../FirebaseConfig';
+import { useAuth } from '../context/AuthContext';
 
 const NotificationItem = ({ notification }) => {
   const navigation = useNavigation();
@@ -72,6 +44,30 @@ const NotificationItem = ({ notification }) => {
 };
 
 const NotificationsScreen = () => {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const notificationsQuery = query(
+      collection(FIREBASE_DB, 'notifications'),
+      where('userId', '==', user.uid),
+      orderBy('createdAt', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(notificationsQuery, (snapshot) => {
+      const notificationsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      
+      setNotifications(notificationsData);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [user.uid]);
+
   const navigation = useNavigation();
 
   return (
@@ -91,7 +87,7 @@ const NotificationsScreen = () => {
       </View>
 
       <ScrollView className="flex-1">
-        {DUMMY_NOTIFICATIONS.map((notification) => (
+        {notifications.map((notification) => (
           <NotificationItem key={notification.id} notification={notification} />
         ))}
       </ScrollView>

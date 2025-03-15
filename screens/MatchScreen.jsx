@@ -50,7 +50,7 @@ const MatchScreen = () => {
             onPress={() =>
               navigation.reset({
                 index: 0,
-                routes: [{ name: 'Main' }],
+                routes: [{ name: 'TabNavigator' }],
               })
             }>
             <Text className="text-center text-lg font-semibold text-white">Keep Swiping</Text>

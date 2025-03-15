@@ -133,7 +133,7 @@ const ProfileScreen = () => {
             <TouchableOpacity
               onPress={() => navigation.navigate(item.title)}
               key={item.id}
-              className="flex-row items-center justify-between rounded-xl bg-gray-50 p-4">
+              className="flex-row items-center justify-between rounded-full bg-gray-50 p-4">
               <View className="flex-row items-center space-x-4">
                 {item.icon}
                 <Text className="text-lg text-gray-900">{item.title}</Text>
@@ -148,7 +148,7 @@ const ProfileScreen = () => {
         </View>
 
         <TouchableOpacity 
-          className="mx-4 my-6 rounded-xl bg-red-50 p-4"
+          className="mx-4 my-6 rounded-full bg-red-50 p-4"
           onPress={handleLogout}
         >
           <Text className="text-center text-lg font-semibold text-red-500">Log Out</Text>

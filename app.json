@@ -1,64 +1,48 @@
 {
   "expo": {
-    "name": "datelink",
+    "name": "DateLink",
     "slug": "datelink",
     "version": "1.0.0",
-
-    "web": {
-      "favicon": "./assets/DATELINK_ICON.png"
-    },
-
-    "experiments": {
-      "tsconfigPaths": true
-    },
-
-    "plugins": [
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "DateLink needs access to your photos to set up your profile and share images in chats.",
-          "cameraPermission": "DateLink needs access to your camera to take profile photos and share images."
-        }
-      ],
-      [
-        "expo-location",
-        {
-          "locationAlwaysAndWhenInUsePermission": "DateLink needs your location to help you find matches nearby and improve your experience.",
-          "locationWhenInUsePermission": "DateLink needs your location to help you find matches nearby."
-        }
-      ]
-    ],
-
     "orientation": "portrait",
     "icon": "./assets/DATELINK_LOGO.png",
-
     "userInterfaceStyle": "light",
-
     "splash": {
       "image": "./assets/DATELINK_LOGO.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
-      "infoPlist": {
-        "NSCameraUsageDescription": "DateLink needs access to your camera to take profile photos and share images.",
-        "NSPhotoLibraryUsageDescription": "DateLink needs access to your photos to set up your profile and share images in chats.",
-        "NSLocationWhenInUseUsageDescription": "DateLink needs your location to help you find matches nearby.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "DateLink needs your location to help you find matches nearby and improve your experience.",
-        "NSContactsUsageDescription": "DateLink needs access to your contacts to find friends using the app."
-      }
+      "bundleIdentifier": "com.yourcompany.datelink"
     },
     "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/DATELINK_LOGO.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.yourcompany.datelink",
       "permissions": [
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE",
-        "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION",
-        "READ_CONTACTS"
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ]
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow DateLink to use your location to show you people nearby.",
+          "locationWhenInUsePermission": "Allow DateLink to use your location to show you people nearby."
+        }
+      ],
+      "react-native-google-mobile-ads"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "599735c1-9efe-4e6b-8e42-8cb40c960050"
+      }
     }
   }
 }

@@ -34,24 +34,6 @@ const AuthScreen = () => {
           onPress={() => navigation.navigate('Register')}>
           <Text className="text-center text-lg font-semibold text-colorBlue">Create Account</Text>
         </TouchableOpacity>
-
-        <View className="my-4 flex-row items-center">
-          <View className="h-[1px] flex-1 bg-gray-300" />
-          <Text className="mx-4 text-gray-500">or continue with</Text>
-          <View className="h-[1px] flex-1 bg-gray-300" />
-        </View>
-
-        <View className="flex-row justify-center space-x-6">
-          <TouchableOpacity className="m-2 rounded-full bg-gray-100 p-4">
-            <Image source={require('../assets/google.png')} className="h-6 w-6" />
-          </TouchableOpacity>
-          <TouchableOpacity className="m-2 rounded-full bg-gray-100 p-4">
-            <Image source={require('../assets/apple.png')} className="h-6 w-6" />
-          </TouchableOpacity>
-          <TouchableOpacity className="m-2 rounded-full bg-gray-100 p-4">
-            <Image source={require('../assets/facebook.png')} className="h-6 w-6" />
-          </TouchableOpacity>
-        </View>
       </View>
     </View>
   );

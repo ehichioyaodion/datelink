@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,12 +6,16 @@ import {
   Image,
   TouchableOpacity,
   FlatList,
+  Alert,
+  Linking,
+  Platform,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import {
   MapPinIcon,
   AdjustmentsVerticalIcon,
 } from "react-native-heroicons/solid";
+import * as Location from 'expo-location';
 
 const DUMMY_NEARBY_USERS = [
   {
@@ -77,6 +81,88 @@ const UserCard = ({ user }) => {
 
 const PeopleNearbyScreen = () => {
   const navigation = useNavigation();
+  const [location, setLocation] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
+
+  useEffect(() => {
+    checkAndRequestLocationPermission();
+  }, []);
+
+  const checkAndRequestLocationPermission = async () => {
+    try {
+      let { status } = await Location.getForegroundPermissionsAsync();
+      
+      if (status !== 'granted') {
+        status = (await Location.requestForegroundPermissionsAsync()).status;
+      }
+
+      if (status === 'granted') {
+        await getLocation();
+      } else {
+        setErrorMsg('Location permission denied');
+        showLocationPermissionAlert();
+      }
+    } catch (error) {
+      console.error('Error checking location permission:', error);
+      setErrorMsg('Error accessing location services');
+    }
+  };
+
+  const getLocation = async () => {
+    try {
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      
+      setLocation(location);
+      // Here you would typically make an API call to fetch nearby users
+      // using location.coords.latitude and location.coords.longitude
+      console.log('Location obtained:', location);
+      
+    } catch (error) {
+      console.error('Error getting location:', error);
+      setErrorMsg('Error getting location');
+    }
+  };
+
+  const showLocationPermissionAlert = () => {
+    Alert.alert(
+      'Location Access Required',
+      'DateLink needs access to your location to show you people nearby. Please enable location services in your device settings.',
+      [
+        {
+          text: 'Open Settings',
+          onPress: () => {
+            if (Platform.OS === 'ios') {
+              Linking.openURL('app-settings:');
+            } else {
+              Linking.openSettings();
+            }
+          },
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+      ],
+    );
+  };
+
+  const renderLocationError = () => {
+    if (!errorMsg) return null;
+
+    return (
+      <View className="p-4 bg-red-100 mx-4 rounded-lg">
+        <Text className="text-red-700 text-center">{errorMsg}</Text>
+        <TouchableOpacity 
+          onPress={checkAndRequestLocationPermission}
+          className="mt-2 bg-red-500 p-2 rounded-lg"
+        >
+          <Text className="text-white text-center">Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -89,6 +175,8 @@ const PeopleNearbyScreen = () => {
           <AdjustmentsVerticalIcon size={24} color="#374151" />
         </TouchableOpacity>
       </View>
+
+      {renderLocationError()}
 
       <ScrollView className="flex-1 pt-4">
         <View className="px-4">
