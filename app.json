@@ -37,7 +37,15 @@
           "locationWhenInUsePermission": "Allow DateLink to use your location to show you people nearby."
         }
       ],
-      "react-native-google-mobile-ads"
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-5874512508124326~1352470498",
+          "iosAppId": "ca-app-pub-5874512508124326~4678413937",
+          "delay": 3000,
+          "userTrackingPermission": "This identifier will be used to deliver personalized ads to you."
+        }
+      ]
     ],
     "extra": {
       "eas": {
